@@ -7,7 +7,7 @@ GITHUB_TOKEN=
 echo ${NEW_TAG}
 
 # 2) Get current latest tag
-OLD_TAG=$(curl -s --get "https://api.github.com/repos/${REPOSITORY}/releases/latest?access_token=29f93f973298422a5206d0b6c622e142090a032e" | grep "tag_name" | cut -d '"' -f4)
+OLD_TAG=$(curl -s --get "https://api.github.com/repos/${REPOSITORY}/releases/latest?access_token=${GITHUB_TOKEN}" | grep "tag_name" | cut -d '"' -f4)
 echo ${OLD_TAG}
 
 # 3) Merge develop to master
