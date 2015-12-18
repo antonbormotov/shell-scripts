@@ -40,8 +40,10 @@ AWS_DEFAULT_REGION=$(curl -s --connect-timeout 2 http://169.254.169.254/latest/m
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-ap-southeast-1}"
 export AWS_DEFAULT_OUTPUT="text"
 
-# 1) Get tag Name of instance
-INSTANCE_NAME=aws ec2 describe-instances --output text --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].[Tags[?Key==`Name`].Value]'
+# 1) Get id and tag Name of instance
+INSTANCE_NAME=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].[Tags[?Key==`Name`].Value]')
+
+INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].InstanceId]')
 
 if [ "${INSTANCE_NAME}" = "None" ] 
 then
