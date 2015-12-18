@@ -52,7 +52,7 @@ then
     fi
 fi
 
-# 1) Get id and tag Name of instance
+# 1) Get instance id and name tag
 INSTANCE_NAME=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].[Tags[?Key==`Name`].Value]')
 
 INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].InstanceId')
@@ -63,5 +63,23 @@ then
     exit 1
 fi
 
-# 2) Create statusCheck metric
-aws cloudwatch put-metric-alarm --alarm-name cpu-mon --alarm-description "Alarm when CPU exceeds 70 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 70 --comparison-operator GreaterThanThreshold  --dimensions  Name=InstanceId,Value=i-12345678 --evaluation-periods 2 --alarm-actions arn:aws:sns:us-east-1:111122223333:MyTopic --unit Percent
+# 2) Create high CPU usage metric
+ARN_OF_SNS_TOPIC=""
+CPU_USAGE=50
+
+aws cloudwatch put-metric-alarm ${DRYRUN}\
+    --alarm-name "${INSTANCE_NAME}-status"\
+    --alarm-description "Alarm when CPU exceeds ${CPU_USAGE}%"\
+    --actions-enabled\
+    --ok-actions "${ARN_OF_SNS_TOPIC}"\
+    --alarm-actions "${ARN_OF_SNS_TOPIC}"\
+    --insufficient-data-actions "${ARN_OF_SNS_TOPIC}"\
+    --metric-name CPUUtilization\
+    --namespace AWS/EC2\
+    --statistic Average\
+    --dimensions  Name=InstanceId,Value=${INSTANCE_ID}\
+    --period 300\
+    --threshold ${CPU_USAGE}\
+    --comparison-operator GreaterThanThreshold\
+    --evaluation-periods 1\
+    --unit Percent
