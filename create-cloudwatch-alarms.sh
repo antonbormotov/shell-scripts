@@ -40,10 +40,22 @@ AWS_DEFAULT_REGION=$(curl -s --connect-timeout 2 http://169.254.169.254/latest/m
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-ap-southeast-1}"
 export AWS_DEFAULT_OUTPUT="text"
 
+if [ "$(curl --fail --connect-timeout 2 http://169.254.169.254/latest/meta-data/iam/security-credentials/> /dev/null 2>&1 ; echo $?)" -ne 0 ]
+then
+    echo "### Role is not assigned to the instance or it is not aws instance"
+    # Look for .aws/config and credential files in home directory
+    if [ ! -f "${HOME}/.aws/config" ] && [ ! -f "${HOME}/.aws/credentials" ] 
+    then
+        echo "### AWS cli has not been configured yet."
+        echo "### To configure aws cli tool, please, run: aws configure"
+        exit 1
+    fi
+fi
+
 # 1) Get id and tag Name of instance
 INSTANCE_NAME=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].[Tags[?Key==`Name`].Value]')
 
-INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].InstanceId]')
+INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=ip-address ,Values=${PRIMARY_PUBLIC_IP_ADDRESS}" --query 'Reservations[0].Instances[0].InstanceId')
 
 if [ "${INSTANCE_NAME}" = "None" ] 
 then
