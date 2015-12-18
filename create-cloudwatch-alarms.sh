@@ -3,7 +3,7 @@
 #
 # FILE: create-cloudwatch-alarms.sh
 #
-# USAGE: create-cloudwatch-alarms.sh <IP-ADDRESS> [ --force  | --dry-run ]
+# USAGE: create-cloudwatch-alarms.sh <IP-ADDRESS>
 #
 # DESCRIPTION: Script creates 2 alarms for instance with PRIMARY_PUBLIC_IP_ADDRESS
 # It does follow steps:
@@ -18,19 +18,6 @@ then
     echo "### Usage: $0 <IP-ADDRESS>"
     echo "### IP address have to be presented in format X.X.X.X"
     exit 1
-fi
-
-if [ "$2" != "--force" ] && [ "$2" != "--dry-run" ]
-then
-    echo "### Usage: $0 $1 [ --force  | --dry-run ]"
-    exit 1
-fi
-
-if [ "$1" = "--dry-run" ]
-then
-    DRYRUN="--dry-run"
-else
-    DRYRUN=""
 fi
 
 # Trying auto-detect AWS region
@@ -64,7 +51,7 @@ then
 fi
 
 # 2) Create high CPU usage metric
-ARN_OF_SNS_TOPIC="arn:aws:sns:ap-southeast-1:976402106354:iprice-alarm"
+ARN_OF_SNS_TOPIC=""
 CPU_USAGE=50
 
 aws cloudwatch put-metric-alarm ${DRYRUN}\
@@ -94,10 +81,10 @@ aws cloudwatch put-metric-alarm ${DRYRUN}\
     --insufficient-data-actions "${ARN_OF_SNS_TOPIC}"\
     --metric-name StatusCheckFailed\
     --namespace AWS/EC2\
-    --statistic Average\
+    --statistic Maximum\
     --dimensions  Name=InstanceId,Value=${INSTANCE_ID}\
     --period 300\
     --threshold 1\
     --comparison-operator GreaterThanOrEqualToThreshold\
     --evaluation-periods 1\
-    --unit Percent
+    --unit Count
