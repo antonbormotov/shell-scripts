@@ -64,11 +64,11 @@ then
 fi
 
 # 2) Create high CPU usage metric
-ARN_OF_SNS_TOPIC=""
+ARN_OF_SNS_TOPIC="arn:aws:sns:ap-southeast-1:976402106354:iprice-alarm"
 CPU_USAGE=50
 
 aws cloudwatch put-metric-alarm ${DRYRUN}\
-    --alarm-name "${INSTANCE_NAME}-status"\
+    --alarm-name "${INSTANCE_NAME}-cpu"\
     --alarm-description "Alarm when CPU exceeds ${CPU_USAGE}%"\
     --actions-enabled\
     --ok-actions "${ARN_OF_SNS_TOPIC}"\
@@ -81,5 +81,23 @@ aws cloudwatch put-metric-alarm ${DRYRUN}\
     --period 300\
     --threshold ${CPU_USAGE}\
     --comparison-operator GreaterThanThreshold\
+    --evaluation-periods 1\
+    --unit Percent
+
+# 3) Create status check metric
+aws cloudwatch put-metric-alarm ${DRYRUN}\
+    --alarm-name "${INSTANCE_NAME}-status"\
+    --alarm-description "Alarm when statusCheck failed"\
+    --actions-enabled\
+    --ok-actions "${ARN_OF_SNS_TOPIC}"\
+    --alarm-actions "${ARN_OF_SNS_TOPIC}"\
+    --insufficient-data-actions "${ARN_OF_SNS_TOPIC}"\
+    --metric-name StatusCheckFailed\
+    --namespace AWS/EC2\
+    --statistic Average\
+    --dimensions  Name=InstanceId,Value=${INSTANCE_ID}\
+    --period 300\
+    --threshold 1\
+    --comparison-operator GreaterThanOrEqualToThreshold\
     --evaluation-periods 1\
     --unit Percent
