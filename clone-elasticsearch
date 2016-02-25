@@ -1,0 +1,36 @@
+#!/bin/bash
+
+/usr/bin/env php artisan es:create --date 20160124_0258 hk
+/usr/bin/env php artisan es:create --date 20160124_0258 id
+/usr/bin/env php artisan es:create --date 20160124_0258 my
+/usr/bin/env php artisan es:create --date 20160124_0258 ph
+/usr/bin/env php artisan es:create --date 20160124_0258 sg
+/usr/bin/env php artisan es:create --date 20160124_0258 th
+/usr/bin/env php artisan es:create --date 20160124_0258 vn
+
+INPUT_DB=""
+OUTPUT_DB=""
+
+INDEX[0]="content_hk_20160124_0258"
+INDEX[1]="content_id_20160124_0258"
+INDEX[2]="content_my_20160124_0258"
+INDEX[3]="content_ph_20160124_0258"
+INDEX[4]="content_sg_20160124_0258"
+INDEX[5]="content_th_20160124_0258"
+INDEX[6]="content_vn_20160124_0258"
+INDEX[7]="log_hk_20160124_0258"
+INDEX[8]="log_id_20160124_0258"
+INDEX[9]="log_my_20160124_0258"
+INDEX[10]="log_ph_20160124_0258"
+INDEX[11]="log_sg_20160124_0258"
+INDEX[12]="log_th_20160124_0258"
+INDEX[13]="log_vn_20160124_0258"
+
+for i in {0..13..1}
+do
+    NODE_TLS_REJECT_UNAUTHORIZED=0 elasticdump --limit=5000 \
+    --input=${INPUT_DB}/${INDEX[${i}]} \
+    --output=${OUTPUT_DB}/${INDEX[${i}]} \
+    --type=data \
+    --bulk=true >/tmp/${OUTPUT[${i}]}.log 2>&1 &
+done
